@@ -1,0 +1,251 @@
+\documentclass[12pt, a4paper]{article}
+\usepackage[utf8]{inputenc}
+\usepackage{amsmath, amssymb}
+\usepackage{geometry}
+\usepackage{enumitem}
+
+% Setup margins
+\geometry{margin=1in}
+
+\title{\textbf{Secure Null-Steering in mmWave ISAC Systems}}
+\author{}
+\date{}
+
+\begin{document}
+
+\maketitle
+
+\section*{1. System Overview}
+Consider a downlink Integrated Sensing and Communications (ISAC) system where a Base Station (``Alice'') transmits data to a single legitimate user (``Bob'') while simultaneously tracking potential eavesdroppers (``Eve'') using radar echoes.
+
+Your goal is to design a transit beamformer that maximises power to Bob while suppressing the signal leakage to Eve (Null-Steering). However, you must first determine if the physical limitations of the antenna array allow for this spatial separation.
+
+\section*{2. System Parameters}
+\begin{itemize}
+    \item \textbf{Carrier Frequency ($f_c$):} 28 GHz.
+    \item \textbf{Transmitter (Alice):}
+    \begin{itemize}
+        \item \textbf{Antenna Array:} A massive MIMO Uniform Planar Array (UPA) with \textbf{64 elements}.
+        \item \textbf{Geometry:} Arranged in an $\mathbf{8 \times 8}$ \textbf{grid} in the \textbf{Y-Z plane} (centered at the origin $[0,0,0]$).
+        \item \textbf{Spacing:} Elements are spaced by half-wavelength ($\lambda/2$) in both horizontal ($y$) and vertical ($z$) directions.
+        \item \textbf{Sensing Zone:} Alice can detect targets within a $120^\circ$ sector ($\pm 60^\circ$) in azimuth and elevation.
+    \end{itemize}
+    \item \textbf{Channel State Information (CSI):} Alice has perfect knowledge of the instantaneous channels for both Bob and Eve.
+\end{itemize}
+
+\section*{3. Scenario Coordinates}
+All coordinates are given in meters $(x, y, z)$ relative to Alice at $(0,0,0)$.
+The array faces the positive x-axis.
+
+\begin{itemize}
+    \item \textbf{Legitimate User (Bob):}
+    \begin{itemize}
+        \item \textbf{Position:} Fixed at $P_{Bob} = (30, 10, 5)$.
+    \end{itemize}
+
+    \item \textbf{Eavesdropper (Eve):}
+    \begin{itemize}
+        \item \textbf{Case A:} $P_{Eve_A} = (30, -20, 5)$
+    \end{itemize}
+\end{itemize}
+
+\section*{4. Signal Model}
+To solve the problem, assume a Line-of-Sight (LoS) channel model. The channel vector $h$ for a user at a specific angle is defined by the array steering vector $a(\theta, \phi)$.
+
+For a UPA in the Y-Z plane with $N_y$ columns and $N_z$ rows ($N_y=8, N_z=8$):
+
+\begin{equation}
+    a(\theta, \phi) = a_z(\phi) \otimes a_y(\theta, \phi)\label{eq:equation}
+\end{equation}
+
+Where $\otimes$ denotes the Kronecker product. The steering vectors for the y and z dimensions are:
+
+\begin{equation}
+    [a\_y(\theta, \phi)]_n = e^{-j \pi n \sin(\theta) \cos(\phi)}, \quad n = 0, \dots, N_y-1\label{eq:equation2}
+\end{equation}
+
+\begin{equation}
+    [a\_z(\phi)]_m = e^{-j \pi m \sin(\phi)}, \quad m = 0, \dots, N_z-1\label{eq:equation3}
+\end{equation}
+
+\begin{itemize}
+    \item $\theta$: Azimuth angle (horizontal angle from the x-axis).
+    \item $\phi$: Elevation angle (vertical angle from the x-y plane).
+\end{itemize}
+
+\section*{5. Problem Questions}
+
+\subsection*{Part 1: The Rayleigh Resolution Limit}
+Before attempting to null Eve, you must verify if she is spatially distinguishable from Bob.
+
+\begin{enumerate}
+    \item Calculate the \textbf{Rayleigh Resolution Limit ($\Delta \theta_{res}$)} for this $8 \times 8$ array at 28 GHz.
+    \emph{(Hint: The resolution limit is determined by the array aperture size ($D$) and wavelength ($\lambda$).)}
+\end{enumerate}
+
+\subsection*{Part 2: Zero-Forcing Beamforming Derivation}
+For the resolvable scenarios, we wish to construct a beamforming weight vector $w \in \mathbb{C}^{64 \times 1}$.
+
+\begin{enumerate}
+    \item Formulate the optimisation problem to find $w$ such that:
+    \begin{itemize}
+        \item The gain towards Bob is normalised to 1: $|w^H h_{Bob}| = 1$
+        \item The power towards Eve is forced to zero: $|w^H h_{Eve}| = 0$
+    \end{itemize}
+    \item Derive the closed-form mathematical expression for $w$ using the \textbf{Zero-Forcing (ZF)} or \textbf{Projection} method.
+\end{enumerate}
+
+\subsection*{Part 3: Numerical Calculation}
+\begin{enumerate}
+    \item Convert the Cartesian coordinates for Bob and \textbf{Case A} ($P_{Eve_A}$) into Azimuth ($\theta$) and Elevation ($\phi$) angles.
+    \item Using your derived expression from Part 2, calculate the beamforming weight vector $w$ for \textbf{Case A}.
+\end{enumerate}
+
+\newpage
+\section*{Solution}\label{sec:solution}
+    \subsection*{Deriving the Zero-Forcing Beamforming Weight Vector:}
+    Constrained optimisation problem
+
+    \begin{equation} \label{eq:equation4}
+        \text{minimise } \|w - h_{Bob}\|^2 \quad \text{subject to } w^H h_{Eve} = 0
+    \end{equation}
+
+    Using Lagrange multipliers, we form the Lagrangian (complex lagrangian chosen as we are dealing with complex vectors):
+
+    \begin{equation} \label{eq:equation5}
+        \begin{split}
+            \mathcal{L}(w, \lambda) &= \|w - h_{Bob}\|^2 + \lambda (w^H h_{Eve}) \\
+                                &= (w - h_{Bob})^{H} \cdot (w - h_{Bob}) + \lambda (w^H h_{Eve})
+        \end{split}
+    \end{equation}
+
+    Finding the Wirtinger derivative:
+    \begin{equation} \label{eq:equation6}
+            \frac{\partial \mathcal{L}}{\partial w^{*}} \&= (w - h_{Bob}) + \lambda h_{Eve} = 0
+    \end{equation}
+
+    Making $w$ the subject and multiply by $h_{Eve}^H$:
+    \begin{equation} \label{eq:equation7}
+        w = h_{Bob} - \lambda h_{Eve} \implies h_{Eve}^H w = h_{Eve}^H h_{Bob} - \lambda (h_{Eve}^H h_{Eve}) = 0
+    \end{equation}
+
+    Making $\lambda$ the subject:
+    \begin{equation} \label{eq:equation8}
+        \lambda = \frac{h_{Eve}^H h_{Bob}}{\|h_{Eve}\|^2}
+    \end{equation}
+
+    Equation~\ref{eq:equation8} substituted into Equation \ref{eq:equation7} and factoring out $h_{Bob}$ gives us the Zero-Forcing Weight Vector
+    \begin{equation} \label{eq:equation9}
+        w = h_{Bob} - \frac{h_{Eve}^H h_{Bob}}{\|h_{Eve}\|^2} h_{Eve} = \left( I - \underbrace{\frac{h_{Eve} h_{Eve}^H}{\|h_{Eve}\|^2}}_{\text{Spatial Coefficient}} \right) h_{Bob}
+    \end{equation}
+
+    \subsection*{Deriving Normalised Spatial Correlation}
+    Below is the spatial correlation coefficient used in Equation \ref{eq:equation9}.
+
+    \begin{equation} \label{eq:equation10}
+        \frac{h_{Eve} h_{Eve}^H}{\|h_{Eve}\|^2}
+    \end{equation}
+    The squared norm is given by $\|h_{Eve}\|^2 = \sum_{n=1}^{64} |h_{n}|^{2}$. \\
+
+    Assuming $h_{n}$ represents a phase-shift element of the form $e^{-j\theta_n}$, its magnitude is $|e^{-j\theta_n}| = 1$.
+    Therefore:
+    \begin{equation} \label{eq:equation11}
+        \|h_{Eve}\|^2 = \sum_{n=1}^{64} 1 = 64 \leftarrow N_{Total}
+    \end{equation}
+
+    Normalised Spatial Correlation:
+    \begin{equation} \label{eq:equation12}
+       \psi = \frac{h_{Eve}^H h_{Bob}}{N_{Total}}
+    \end{equation}
+
+    \subsection*{Array Normalisation Factor}
+    To normalise received signal by magintude 1 (Unity gain).
+    \begin{equation} \label{eq:equation13}
+        w^{H} h_{Bob} = 1
+    \end{equation}
+
+    Assuming $w$ is a scaled version of $h_{Bob}$
+    \begin{equation} \label{eq:equation14}
+        w = \alpha h_{Bob}
+    \end{equation}
+
+    Substituting Equation \ref{eq:equation14} into Equation \ref{eq:equation13}:
+    \begin{equation} \label{eq:equation15}
+        \begin{split}
+            (\alpha h_{Bob})^{H} h_{Bob} &= 1 \\
+             \alpha \underbrace{(h_{Bob}^{H} h_{Bob})}_{64} &= 1 \\
+            \alpha \cdot 64 &= 1 \\
+            \alpha &= \frac{1}{64}
+        \end{split}
+    \end{equation}
+
+    \subsection*{Final Beamforming Weight Vector}
+    Combining all parts together, the final beamforming weight vector $w_{Final}$ is given by:
+    \begin{equation} \label{eq:equation16}
+        \begin{split}
+            w_{Final}   &= \alpha (h_{Bob} - \psi h_{Eve}) \\
+                &= \alpha h_{Bob} - (\alpha \psi) h_{Eve} \quad \text{let } \beta = \alpha \psi
+        \end{split}
+    \end{equation}
+
+    Crucially, $\psi$ is a complex number (magnitude and phase). For this scenario:
+    $$ \alpha \approx \frac{1}{64} \approx 0.0159 $$
+    $$ \psi \approx 0.121 - j0.032 $$
+    $$ \beta = \alpha \psi \approx 0.0019 - j0.0005 $$
+
+    Thus:
+    $$ w_{Final} = 0.0159 h_{Bob} - (0.0019 - j0.0005) h_{Eve} $$
+
+    \newpage
+    \subsection*{Formulas}
+
+    \begin{itemize}
+        \item Azimuth Angle: $\theta = \tan^{-1}\left(\frac{y}{x}\right)$
+        \item Elevation Angle: $\phi = \tan^{-1}\left(\frac{z}{\sqrt{x^2 + y^2}}\right)$
+    \end{itemize}
+
+    \subsection*{Case A Calculation}
+
+    \underline{Bob}
+    \begin{equation} \label{eq:equation17}
+        \begin{split}
+            \theta_{Bob} &= \tan^{-1}\left(\frac{10}{30}\right) \approx 18.43^\circ \\
+            % Corrected: Denominator must include y^2 (sqrt(30^2 + 10^2) = 31.62)
+            \phi_{Bob} &= \tan^{-1}\left(\frac{5}{31.62}\right) \approx 8.99^\circ
+        \end{split}
+    \end{equation}
+
+    Steering vector calculation for Bob (first element $n=0$ is 1):
+    \begin{equation} \label{eq:equationBobSteering}
+        [h_{Bob}]_0 = 1
+    \end{equation}
+
+    \underline{Eve A}
+    \begin{equation} \label{eq:equation18}
+        \begin{split}
+            \theta_{Eve_A} &= \tan^{-1}\left(\frac{-20}{30}\right) \approx -33.69^\circ \\
+            % Corrected: Denominator must include y^2 (sqrt(30^2 + (-20)^2) = 36.06)
+            \phi_{Eve_A} &= \tan^{-1}\left(\frac{5}{36.06}\right) \approx 7.90^\circ
+        \end{split}
+    \end{equation}
+
+    Steering vector calculation for Eve (first element $n=0$ is 1):
+    \begin{equation} \label{eq:equationEveSteering}
+        [h_{Eve_A}]_0 = 1
+    \end{equation}
+
+    \underline{For Antenna 1 (index 0)}
+    Using the complex weights derived in Equation \ref{eq:equation16}:
+    \begin{equation} \label{eq:equation19}
+        \begin{split}
+            w_{0} &= \alpha \cdot [h_{Bob}]_0 - \beta \cdot [h_{Eve_A}]_0 \\
+                  &= 0.0159 \cdot (1) - (0.0019 - j0.0005) \cdot (1) \\
+                  &= 0.0140 + j0.0005
+        \end{split}
+    \end{equation}
+
+    This complex weight ensures the signal phase cancels out perfectly at Eve's location.
+
+    The aforementioned procedure can be repeated for all 64 antenna elements to construct the complete beamforming weight vector $w$.
+
+\end{document}

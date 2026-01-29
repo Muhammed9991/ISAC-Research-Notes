@@ -1,0 +1,27 @@
+# Core LaTeX build files
+*.aux
+*.log
+*.out
+*.toc
+*.synctex.gz
+*.fls
+*.fdb_latexmk
+
+# Bibliography files
+*.bbl
+*.blg
+
+# Beamer presentation files
+*.nav
+*.snm
+
+# Editors and OS
+.vscode/
+.DS_Store
+*.swp
+
+# PDF files
+# Usually, you don't commit PDFs.
+# However, if you want your supervisor to see the result on GitHub,
+# you can comment out the line below (add a # in front).
+*.pdf
