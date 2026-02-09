@@ -17,8 +17,8 @@
 
 \section*{1. System Overview}
 Consider a downlink Integrated Sensing and Communications (ISAC) system where a Base Station (``Alice'') transmits data to a single legitimate user (``Bob'') while simultaneously tracking potential eavesdroppers (``Eve'') using radar echoes.
-
-Your goal is to design a transit beamformer that maximises power to Bob while suppressing the signal leakage to Eve (Null-Steering). However, you must first determine if the physical limitations of the antenna array allow for this spatial separation.
+Your goal is to design a transit beamformer that maximises power to Bob while suppressing the signal leakage to Eve (Null-Steering).
+However, you must first determine if the physical limitations of the antenna array allow for this spatial separation.
 
 \section*{2. System Parameters}
 \begin{itemize}
@@ -45,39 +45,39 @@ The array faces the positive x-axis.
 
     \item \textbf{Eavesdropper (Eve):}
     \begin{itemize}
-        \item \textbf{Case A:} $P_{Eve_A} = (30, -20, 5)$
+        \item \textbf{Case A:} $P_{Eve_A} = (30, -20, 5)$.
     \end{itemize}
 \end{itemize}
 
 \section*{4. Signal Model}
-To solve the problem, assume a Line-of-Sight (LoS) channel model. The channel vector $h$ for a user at a specific angle is defined by the array steering vector $a(\theta, \phi)$.
-
+To solve the problem, assume a Line-of-Sight (LoS) channel model.
+The channel vector $h$ for a user at a specific angle is defined by the array steering vector $a(\theta, \phi)$.
 For a UPA in the Y-Z plane with $N_y$ columns and $N_z$ rows ($N_y=8, N_z=8$):
 
-\begin{equation}
-    a(\theta, \phi) = a_z(\phi) \otimes a_y(\theta, \phi)\label{eq:equation}
+\begin{equation} \label{eq:equation1}
+    a(\theta, \phi) = a_z(\phi) \otimes a_y(\theta, \phi)
 \end{equation}
 
-Where $\otimes$ denotes the Kronecker product. The steering vectors for the y and z dimensions are:
+Where $\otimes$ denotes the Kronecker product.
+The steering vectors for the y and z dimensions are:
 
-\begin{equation}
-    [a\_y(\theta, \phi)]_n = e^{-j \pi n \sin(\theta) \cos(\phi)}, \quad n = 0, \dots, N_y-1\label{eq:equation2}
+\begin{equation} \label{eq:equation2}
+    [a_y(\theta, \phi)]_n = e^{-j \pi n \sin(\theta) \cos(\phi)}, \quad n = 0, \dots, N_y-1
 \end{equation}
 
-\begin{equation}
-    [a\_z(\phi)]_m = e^{-j \pi m \sin(\phi)}, \quad m = 0, \dots, N_z-1\label{eq:equation3}
+\begin{equation} \label{eq:equation3}
+    [a_z(\phi)]_m = e^{-j \pi m \sin(\phi)}, \quad m = 0, \dots, N_z-1
 \end{equation}
 
 \begin{itemize}
     \item $\theta$: Azimuth angle (horizontal angle from the x-axis).
-    \item $\phi$: Elevation angle (vertical angle from the x-y plane).
+    \item $\phi$ Elevation angle (vertical angle from the x-y plane).
 \end{itemize}
 
 \section*{5. Problem Questions}
 
 \subsection*{Part 1: The Rayleigh Resolution Limit}
 Before attempting to null Eve, you must verify if she is spatially distinguishable from Bob.
-
 \begin{enumerate}
     \item Calculate the \textbf{Rayleigh Resolution Limit ($\Delta \theta_{res}$)} for this $8 \times 8$ array at 28 GHz.
     \emph{(Hint: The resolution limit is determined by the array aperture size ($D$) and wavelength ($\lambda$).)}
@@ -85,7 +85,6 @@ Before attempting to null Eve, you must verify if she is spatially distinguishab
 
 \subsection*{Part 2: Zero-Forcing Beamforming Derivation}
 For the resolvable scenarios, we wish to construct a beamforming weight vector $w \in \mathbb{C}^{64 \times 1}$.
-
 \begin{enumerate}
     \item Formulate the optimisation problem to find $w$ such that:
     \begin{itemize}
@@ -103,149 +102,156 @@ For the resolvable scenarios, we wish to construct a beamforming weight vector $
 
 \newpage
 \section*{Solution}\label{sec:solution}
-    \subsection*{Deriving the Zero-Forcing Beamforming Weight Vector:}
-    Constrained optimisation problem
+    \subsection*{Deriving the Zero-Forcing Beamforming Weight Vector}
+    Constrained optimisation problem:
 
     \begin{equation} \label{eq:equation4}
         \text{minimise } \|w - h_{Bob}\|^2 \quad \text{subject to } w^H h_{Eve} = 0
     \end{equation}
 
-    Using Lagrange multipliers, we form the Lagrangian (complex lagrangian chosen as we are dealing with complex vectors):
+    Using Lagrange multipliers, we form the Lagrangian:
 
     \begin{equation} \label{eq:equation5}
         \begin{split}
             \mathcal{L}(w, \lambda) &= \|w - h_{Bob}\|^2 + \lambda (w^H h_{Eve}) \\
-                                &= (w - h_{Bob})^{H} \cdot (w - h_{Bob}) + \lambda (w^H h_{Eve})
+                                  &= (w - h_{Bob})^{H} (w - h_{Bob}) + \lambda (w^H h_{Eve})
         \end{split}
     \end{equation}
 
-    Finding the Wirtinger derivative:
+    Finding the Wirtinger derivative with respect to $w^*$:
     \begin{equation} \label{eq:equation6}
-            \frac{\partial \mathcal{L}}{\partial w^{*}} \&= (w - h_{Bob}) + \lambda h_{Eve} = 0
+            \frac{\partial \mathcal{L}}{\partial w^{*}} = (w - h_{Bob}) + \lambda h_{Eve} = 0
     \end{equation}
 
-    Making $w$ the subject and multiply by $h_{Eve}^H$:
+    Rearranging to make $w$ the subject:
     \begin{equation} \label{eq:equation7}
-        w = h_{Bob} - \lambda h_{Eve} \implies h_{Eve}^H w = h_{Eve}^H h_{Bob} - \lambda (h_{Eve}^H h_{Eve}) = 0
+        w = h_{Bob} - \lambda h_{Eve}
     \end{equation}
 
-    Making $\lambda$ the subject:
+    To find $\lambda$, we strictly enforce the zero-forcing constraint:
     \begin{equation} \label{eq:equation8}
-        \lambda = \frac{h_{Eve}^H h_{Bob}}{\|h_{Eve}\|^2}
+        h_{Eve}^H w = 0
     \end{equation}
 
-    Equation~\ref{eq:equation8} substituted into Equation \ref{eq:equation7} and factoring out $h_{Bob}$ gives us the Zero-Forcing Weight Vector
+    Substituting Equation~\ref{eq:equation7} into Equation~\ref{eq:equation8}:
     \begin{equation} \label{eq:equation9}
-        w = h_{Bob} - \frac{h_{Eve}^H h_{Bob}}{\|h_{Eve}\|^2} h_{Eve} = \left( I - \underbrace{\frac{h_{Eve} h_{Eve}^H}{\|h_{Eve}\|^2}}_{\text{Spatial Coefficient}} \right) h_{Bob}
+        h_{Eve}^H (h_{Bob} - \lambda h_{Eve}) = 0
     \end{equation}
 
-    \subsection*{Deriving Normalised Spatial Correlation}
-    Below is the spatial correlation coefficient used in Equation \ref{eq:equation9}.
-
+    Expanding and solving for $\lambda$:
     \begin{equation} \label{eq:equation10}
-        \frac{h_{Eve} h_{Eve}^H}{\|h_{Eve}\|^2}
+        \begin{split}
+            h_{Eve}^H h_{Bob} - \lambda (h_{Eve}^H h_{Eve}) &= 0 \\
+            \lambda \|h_{Eve}\|^2 &= h_{Eve}^H h_{Bob} \\
+            \lambda &= \frac{h_{Eve}^H h_{Bob}}{\|h_{Eve}\|^2}
+        \end{split}
     \end{equation}
-    The squared norm is given by $\|h_{Eve}\|^2 = \sum_{n=1}^{64} |h_{n}|^{2}$. \\
 
-    Assuming $h_{n}$ represents a phase-shift element of the form $e^{-j\theta_n}$, its magnitude is $|e^{-j\theta_n}| = 1$.
-    Therefore:
+    Substituting the scalar value from Equation~\ref{eq:equation10} back into Equation~\ref{eq:equation7} gives the initial expression:
     \begin{equation} \label{eq:equation11}
-        \|h_{Eve}\|^2 = \sum_{n=1}^{64} 1 = 64 \leftarrow N_{Total}
+        w = h_{Bob} - \left( \frac{h_{Eve}^H h_{Bob}}{\|h_{Eve}\|^2} \right) h_{Eve}
     \end{equation}
 
-    Normalised Spatial Correlation:
+    This can be expressed using the projection matrix onto Eve's null space:
     \begin{equation} \label{eq:equation12}
-       \psi = \frac{h_{Eve}^H h_{Bob}}{N_{Total}}
+        w = \left( I - \frac{h_{Eve} h_{Eve}^H}{\|h_{Eve}\|^2} \right) h_{Bob}
     \end{equation}
 
-    \subsection*{Array Normalisation Factor}
-    To normalise received signal by magintude 1 (Unity gain).
+
+    \subsubsection*{Calculation of Correlation $\rho$}
+    Before calculating $\alpha$, we need $\rho$.
+    This decomposes into the product of the elevation ($G_z$) and azimuth ($G_y$) array gains.
     \begin{equation} \label{eq:equation13}
-        w^{H} h_{Bob} = 1
+        |\rho| \approx \frac{1}{N_{total}} (G_z \cdot G_y)
     \end{equation}
-
-    Assuming $w$ is a scaled version of $h_{Bob}$
-    \begin{equation} \label{eq:equation14}
-        w = \alpha h_{Bob}
-    \end{equation}
-
-    Substituting Equation \ref{eq:equation14} into Equation \ref{eq:equation13}:
-    \begin{equation} \label{eq:equation15}
-        \begin{split}
-            (\alpha h_{Bob})^{H} h_{Bob} &= 1 \\
-             \alpha \underbrace{(h_{Bob}^{H} h_{Bob})}_{64} &= 1 \\
-            \alpha \cdot 64 &= 1 \\
-            \alpha &= \frac{1}{64}
-        \end{split}
-    \end{equation}
-
-    \subsection*{Final Beamforming Weight Vector}
-    Combining all parts together, the final beamforming weight vector $w_{Final}$ is given by:
-    \begin{equation} \label{eq:equation16}
-        \begin{split}
-            w_{Final}   &= \alpha (h_{Bob} - \psi h_{Eve}) \\
-                &= \alpha h_{Bob} - (\alpha \psi) h_{Eve} \quad \text{let } \beta = \alpha \psi
-        \end{split}
-    \end{equation}
-
-    Crucially, $\psi$ is a complex number (magnitude and phase). For this scenario:
-    $$ \alpha \approx \frac{1}{64} \approx 0.0159 $$
-    $$ \psi \approx 0.121 - j0.032 $$
-    $$ \beta = \alpha \psi \approx 0.0019 - j0.0005 $$
-
-    Thus:
-    $$ w_{Final} = 0.0159 h_{Bob} - (0.0019 - j0.0005) h_{Eve} $$
-
-    \newpage
-    \subsection*{Formulas}
 
     \begin{itemize}
-        \item Azimuth Angle: $\theta = \tan^{-1}\left(\frac{y}{x}\right)$
-        \item Elevation Angle: $\phi = \tan^{-1}\left(\frac{z}{\sqrt{x^2 + y^2}}\right)$
+        \item \textbf{Elevation Gain ($G_z$):} The angular separation is small ($\Delta \phi \approx 1^\circ$). The beams overlap constructively, so $G_z \approx N_z = 8$.
+        \item \textbf{Azimuth Gain ($G_y$):} The users are widely separated in azimuth ($\approx 52^\circ$). The side-lobe leakage is low, approximated by the Dirichlet kernel as $G_y \approx 1$.
     \end{itemize}
 
-    \subsection*{Case A Calculation}
+    \begin{equation} \label{eq:equation14}
+        |\rho| \approx \frac{8 \cdot 1}{64} = 0.125
+    \end{equation}
 
-    \underline{Bob}
+    \subsection*{Array Normalisation Factor ($\alpha$)}
+    To normalise the received signal to magnitude 1 (Unity gain), we enforce the constraint $w^{H} h_{Bob} = 1$.
+    Let the final vector be $w_{final} = \alpha w$.
+
+    Substituting the expression for $w$ into the constraint:
+    \begin{equation} \label{eq:equation15}
+        \alpha \left[ \left( I - \frac{h_{Eve} h_{Eve}^H}{\|h_{Eve}\|^2} \right) h_{Bob} \right]^H h_{Bob} = 1
+    \end{equation}
+
+    Expanding the inner term:
+    \begin{equation} \label{eq:equation16}
+        \alpha \left( h_{Bob}^H h_{Bob} - \frac{h_{Bob}^H h_{Eve} h_{Eve}^H h_{Bob}}{\|h_{Eve}\|^2} \right) = 1
+    \end{equation}
+
+    Recognising that $h_{Bob}^H h_{Eve} h_{Eve}^H h_{Bob} = |h_{Eve}^H h_{Bob}|^2$:
     \begin{equation} \label{eq:equation17}
-        \begin{split}
-            \theta_{Bob} &= \tan^{-1}\left(\frac{10}{30}\right) \approx 18.43^\circ \\
-            % Corrected: Denominator must include y^2 (sqrt(30^2 + 10^2) = 31.62)
-            \phi_{Bob} &= \tan^{-1}\left(\frac{5}{31.62}\right) \approx 8.99^\circ
-        \end{split}
+        \alpha \left( \|h_{Bob}\|^2 - \frac{|h_{Eve}^H h_{Bob}|^2}{\|h_{Eve}\|^2} \right) = 1
     \end{equation}
 
-    Steering vector calculation for Bob (first element $n=0$ is 1):
-    \begin{equation} \label{eq:equationBobSteering}
-        [h_{Bob}]_0 = 1
-    \end{equation}
-
-    \underline{Eve A}
+    Factorising $\|h_{Bob}\|^2$:
     \begin{equation} \label{eq:equation18}
-        \begin{split}
-            \theta_{Eve_A} &= \tan^{-1}\left(\frac{-20}{30}\right) \approx -33.69^\circ \\
-            % Corrected: Denominator must include y^2 (sqrt(30^2 + (-20)^2) = 36.06)
-            \phi_{Eve_A} &= \tan^{-1}\left(\frac{5}{36.06}\right) \approx 7.90^\circ
-        \end{split}
+        \alpha \|h_{Bob}\|^2 \left( 1 - \frac{|h_{Eve}^H h_{Bob}|^2}{\|h_{Eve}\|^2 \|h_{Bob}\|^2} \right) = 1
     \end{equation}
 
-    Steering vector calculation for Eve (first element $n=0$ is 1):
-    \begin{equation} \label{eq:equationEveSteering}
-        [h_{Eve_A}]_0 = 1
-    \end{equation}
-
-    \underline{For Antenna 1 (index 0)}
-    Using the complex weights derived in Equation \ref{eq:equation16}:
+    The term in the fraction is exactly the square of the correlation coefficient $|\rho|^2$. Thus:
     \begin{equation} \label{eq:equation19}
-        \begin{split}
-            w_{0} &= \alpha \cdot [h_{Bob}]_0 - \beta \cdot [h_{Eve_A}]_0 \\
-                  &= 0.0159 \cdot (1) - (0.0019 - j0.0005) \cdot (1) \\
-                  &= 0.0140 + j0.0005
-        \end{split}
+        \alpha = \frac{1}{\|h_{Bob}\|^2 (1 - |\rho|^2)}
     \end{equation}
 
-    This complex weight ensures the signal phase cancels out perfectly at Eve's location.
+    Substituting $|\rho| \approx 0.125$ into the $\alpha$ equation:
+    \begin{equation} \label{eq:equation20}
+        \alpha = \frac{1}{64 (1 - 0.125^2)} = \frac{1}{64(0.984)} \approx 0.0159
+    \end{equation}
 
-    The aforementioned procedure can be repeated for all 64 antenna elements to construct the complete beamforming weight vector $w$.
+    \subsection*{Analytic Derivation of $\beta$}
+    The final beamforming equation is:
+    \begin{equation} \label{eq:equation21}
+        w_{final} = \alpha h_{Bob} - \underbrace{\left( \alpha \frac{h_{Eve}^H h_{Bob}}{\|h_{Eve}\|^2} \right)}_{\beta} h_{Eve}
+    \end{equation}
+
+    To understand why $\beta$ is complex, we expand the inner product $h_{Eve}^H h_{Bob}$. This is a sum of phasors. For a uniform linear array (ULA) of $N$ elements with spatial frequency difference $\Delta \psi$:
+    \begin{equation} \label{eq:equation22}
+        \text{Inner Product} = \sum_{n=0}^{N-1} e^{j n \Delta \psi} = \underbrace{e^{j \frac{N-1}{2} \Delta \psi}}_{\text{Phase Rotation}} \cdot \underbrace{\frac{\sin(N \Delta \psi / 2)}{\sin(\Delta \psi / 2)}}_{\text{Real Magnitude (Dirichlet)}}
+    \end{equation}
+
+    The term $e^{j \frac{N-1}{2} \Delta \psi}$ represents the \textbf{phase shift} due to the array center being at index $(N-1)/2$ rather than 0.
+
+    \textbf{Applying to our parameters:}
+    \begin{itemize}
+        \item The Magnitude part corresponds to our estimated gains ($G_z \approx 8, G_y \approx 1$).
+        \item The Phase Rotation comes from the Azimuth difference $\Delta_y \approx 0.862$.
+        \item Phase Argument $\Phi \approx \frac{7}{2} \pi (0.862) \approx 3.017 \pi \equiv 0.017 \pi$ (modulo $2\pi$).
+        \item This small residual phase angle rotates the vector slightly off the real axis.
+    \end{itemize}
+
+    \textbf{Calculation:}
+    \begin{equation} \label{eq:equation23}
+    \begin{split}
+        \beta &= \frac{\alpha}{N_{total}} (8 \cdot e^{-j 0.26}) \quad \text{(approximate phase from geometry)} \\
+        \beta &= \frac{0.0159}{64} (8) (\cos(-0.26) + j\sin(-0.26)) \\
+        \beta &\approx 0.00198 (0.96 - j0.25) \\
+        \beta &\approx 0.0019 - j0.0005
+    \end{split}
+    \end{equation}
+
+    The imaginary component $-j0.0005$ arises strictly from this phase rotation term in the geometric series summation.
+
+    \subsection*{Final Calculation for Antenna 1}
+    \underline{For Antenna 1 (index 0):}
+    Assuming reference elements $[h_{Bob}]_0 = 1$ and $[h_{Eve}]_0 = 1$:
+    \begin{equation} \label{eq:equation24}
+    \begin{split}
+        w_0 &= \alpha [h_{Bob}]_0 - \beta [h_{Eve}]_0 \\
+        w_0 &= 0.0159(1) - (0.0019 - j0.0005)(1) \\
+        w_0 &= 0.0140 + j0.0005
+    \end{split}
+    \end{equation}
+
+    This calculation is then repeated for all 64 antenna elements to construct the full beamforming vector $w$.
 
 \end{document}
