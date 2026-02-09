@@ -1,0 +1,11 @@
+name: notes
+channels:
+  - conda-forge
+dependencies:
+  - python=3.13.1
+  - numpy
+  - matplotlib
+  - ipykernel
+  - pip
+  - pip:
+    - notebook
